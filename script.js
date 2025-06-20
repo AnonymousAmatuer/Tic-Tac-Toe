@@ -1,5 +1,8 @@
-let board = ['', '', '', '', '', '', '', '', ''];
-let currentPlayer = 'X';
+const PLAYER_X = 'X';
+const PLAYER_O = 'O';
+
+let board = Array(9).fill('');
+let currentPlayer = PLAYER_X;
 let gameActive = true;
 let twoPlayerMode = true;
 
@@ -7,11 +10,11 @@ const boardElement = document.getElementById('game-board');
 const statusElement = document.getElementById('status-message');
 
 function startGame() {
-  board = ['', '', '', '', '', '', '', '', ''];
-  currentPlayer = 'X';
+  board.fill('');
+  currentPlayer = PLAYER_X;
   gameActive = true;
-  displayBoard();
   statusElement.textContent = `${currentPlayer}'s turn`;
+  renderBoard();
 }
 
 function togglePlayerMode() {
@@ -19,54 +22,70 @@ function togglePlayerMode() {
   startGame();
 }
 
-function displayBoard() {
-  boardElement.innerHTML = '';
-  for (let i = 0; i < 9; i++) {
-    const cell = document.createElement('div');
-    cell.className = 'cell';
-    cell.textContent = board[i];
-    cell.addEventListener('click', () => handleCellClick(i));
-    boardElement.appendChild(cell);
-  }
+function renderBoard() {
+  boardElement.innerHTML = ''; // clear previous cells and event listeners
+  board.forEach((cell, i) => {
+    const cellEl = document.createElement('div');
+    cellEl.className = 'cell';
+    cellEl.textContent = cell;
+    if (gameActive && cell === '') {
+      cellEl.addEventListener('click', () => handleCellClick(i));
+      cellEl.style.cursor = 'pointer';
+    } else {
+      cellEl.style.cursor = 'default';
+    }
+    boardElement.appendChild(cellEl);
+  });
 }
 
 function handleCellClick(index) {
-  if (!gameActive || board[index] !== '') return;
+  if (!gameActive || board[index]) return;
 
   board[index] = currentPlayer;
-  displayBoard();
+  renderBoard();
 
-  if (checkWinner()) {
+  if (checkWinner(board, currentPlayer)) {
     statusElement.textContent = `${currentPlayer} wins!`;
     gameActive = false;
-  } else if (board.every(cell => cell !== '')) {
+    highlightWinningCells(board, currentPlayer);
+    return;
+  }
+
+  if (board.every(cell => cell !== '')) {
     statusElement.textContent = 'It\'s a tie!';
     gameActive = false;
-  } else {
-    currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
-    statusElement.textContent = `${currentPlayer}'s turn`;
+    return;
+  }
 
-    if (!twoPlayerMode && currentPlayer === 'O' && gameActive) {
-      setTimeout(makeBotMove, 500);
-    }
+  currentPlayer = currentPlayer === PLAYER_X ? PLAYER_O : PLAYER_X;
+  statusElement.textContent = `${currentPlayer}'s turn`;
+
+  if (!twoPlayerMode && currentPlayer === PLAYER_O && gameActive) {
+    setTimeout(makeBotMove, 500);
   }
 }
 
-function checkWinner() {
-  const winningCombinations = [
-    [0, 1, 2], [3, 4, 5], [6, 7, 8], // Rows
-    [0, 3, 6], [1, 4, 7], [2, 5, 8], // Columns
-    [0, 4, 8], [2, 4, 6]             // Diagonals
+function checkWinner(bd, player) {
+  const winCombos = [
+    [0,1,2],[3,4,5],[6,7,8], // rows
+    [0,3,6],[1,4,7],[2,5,8], // cols
+    [0,4,8],[2,4,6]          // diagonals
   ];
 
-  for (const combo of winningCombinations) {
-    const [a, b, c] = combo;
-    if (board[a] && board[a] === board[b] && board[a] === board[c]) {
-      return true;
-    }
-  }
+  return winCombos.some(combo => combo.every(i => bd[i] === player));
+}
 
-  return false;
+function highlightWinningCells(bd, player) {
+  const winCombos = [
+    [0,1,2],[3,4,5],[6,7,8],
+    [0,3,6],[1,4,7],[2,5,8],
+    [0,4,8],[2,4,6]
+  ];
+  const winningCombo = winCombos.find(combo => combo.every(i => bd[i] === player));
+  if (!winningCombo) return;
+  
+  const cells = boardElement.children;
+  winningCombo.forEach(i => cells[i].style.backgroundColor = 'lightgreen');
 }
 
 function makeBotMove() {
@@ -75,61 +94,42 @@ function makeBotMove() {
 }
 
 function minimax(newBoard, player) {
-  const availableMoves = getEmptyCells(newBoard);
+  const emptyIndices = newBoard.map((v,i) => v === '' ? i : null).filter(v => v !== null);
 
-  if (checkWinner(newBoard, 'X')) {
-    return { score: -1 };
-  } else if (checkWinner(newBoard, 'O')) {
-    return { score: 1 };
-  } else if (availableMoves.length === 0) {
-    return { score: 0 };
-  }
+  if (checkWinner(newBoard, PLAYER_X)) return { score: -10 };
+  if (checkWinner(newBoard, PLAYER_O)) return { score: 10 };
+  if (emptyIndices.length === 0) return { score: 0 };
 
   const moves = [];
 
-  for (let i = 0; i < availableMoves.length; i++) {
-    const move = {};
-    move.index = availableMoves[i];
-    newBoard[availableMoves[i]] = player;
+  for (const i of emptyIndices) {
+    const move = { index: i };
+    newBoard[i] = player;
 
-    if (player === 'O') {
-      move.score = minimax(newBoard, 'X').score;
+    if (player === PLAYER_O) {
+      const result = minimax(newBoard, PLAYER_X);
+      move.score = result.score;
     } else {
-      move.score = minimax(newBoard, 'O').score;
+      const result = minimax(newBoard, PLAYER_O);
+      move.score = result.score;
     }
 
-    newBoard[availableMoves[i]] = '';
-
+    newBoard[i] = '';
     moves.push(move);
   }
 
-  let bestMove;
-  if (player === 'O') {
-    let bestScore = -Infinity;
-    for (let i = 0; i < moves.length; i++) {
-      if (moves[i].score > bestScore) {
-        bestScore = moves[i].score;
-        bestMove = i;
-      }
-    }
+  if (player === PLAYER_O) {
+    // maximize score
+    let maxScore = -Infinity, bestMove;
+    moves.forEach(m => { if (m.score > maxScore) { maxScore = m.score; bestMove = m; } });
+    return bestMove;
   } else {
-    let bestScore = Infinity;
-    for (let i = 0; i < moves.length; i++) {
-      if (moves[i].score < bestScore) {
-        bestScore = moves[i].score;
-        bestMove = i;
-      }
-    }
+    // minimize score
+    let minScore = Infinity, bestMove;
+    moves.forEach(m => { if (m.score < minScore) { minScore = m.score; bestMove = m; } });
+    return bestMove;
   }
-
-  return moves[bestMove];
 }
 
-function getEmptyCells(newBoard) {
-  return newBoard.reduce((acc, cell, index) => {
-    if (cell === '') {
-      acc.push(index);
-    }
-    return acc;
-  }, []);
-}
+// Initialize the game on page load
+startGame();
