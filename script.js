@@ -1,42 +1,45 @@
+// Constants
 const PLAYER_X = 'X';
 const PLAYER_O = 'O';
+const WIN_COLOR = 'lightgreen';
+const DEFAULT_CELL_COLOR = ''; // reset color
 
+// Game state
 let board = Array(9).fill('');
 let currentPlayer = PLAYER_X;
 let gameActive = true;
-let twoPlayerMode = true;
-let difficulty = 'medium'; // easy, medium, hard
+let twoPlayerMode = true; // true = 2-player, false = vs Bot
+let difficulty = 'medium'; // 'easy', 'medium', 'hard'
 
+// DOM Elements
 const boardElement = document.getElementById('game-board');
 const statusElement = document.getElementById('status-message');
+const container = document.querySelector('.container'); // for difficulty styling
+const modeToggleBtn = document.getElementById('mode-toggle'); // assumes you have a button for mode toggle
+const difficultyButtons = document.querySelectorAll('.difficulty-select button'); // your difficulty buttons
 
+// Initialize everything
 function startGame() {
   board.fill('');
   currentPlayer = PLAYER_X;
   gameActive = true;
   statusElement.textContent = `${currentPlayer}'s turn`;
+  clearHighlights();
   renderBoard();
-}
-
-function togglePlayerMode() {
-  twoPlayerMode = !twoPlayerMode;
-  startGame();
-}
-
-function setDifficulty(level) {
-  difficulty = level;
-  startGame();
+  updateModeStyle();
+  updateModeToggleButton();
 }
 
 function renderBoard() {
-  boardElement.innerHTML = ''; 
+  boardElement.innerHTML = '';
   board.forEach((cell, i) => {
     const cellEl = document.createElement('div');
     cellEl.className = 'cell';
     cellEl.textContent = cell;
+    cellEl.style.backgroundColor = DEFAULT_CELL_COLOR;
     if (gameActive && cell === '') {
-      cellEl.addEventListener('click', () => handleCellClick(i));
       cellEl.style.cursor = 'pointer';
+      cellEl.addEventListener('click', () => handleCellClick(i));
     } else {
       cellEl.style.cursor = 'default';
     }
@@ -58,15 +61,17 @@ function handleCellClick(index) {
   }
 
   if (board.every(cell => cell !== '')) {
-    statusElement.textContent = 'It\'s a tie!';
+    statusElement.textContent = "It's a tie!";
     gameActive = false;
     return;
   }
 
+  // Switch player
   currentPlayer = currentPlayer === PLAYER_X ? PLAYER_O : PLAYER_X;
   statusElement.textContent = `${currentPlayer}'s turn`;
 
   if (!twoPlayerMode && currentPlayer === PLAYER_O && gameActive) {
+    // Bot's move delayed for UX
     setTimeout(makeBotMove, 500);
   }
 }
@@ -90,27 +95,31 @@ function highlightWinningCells(bd, player) {
   if (!winningCombo) return;
 
   const cells = boardElement.children;
-  winningCombo.forEach(i => cells[i].style.backgroundColor = 'lightgreen');
+  winningCombo.forEach(i => cells[i].style.backgroundColor = WIN_COLOR);
+}
+
+function clearHighlights() {
+  Array.from(boardElement.children).forEach(cell => cell.style.backgroundColor = DEFAULT_CELL_COLOR);
 }
 
 function makeBotMove() {
+  if (!gameActive) return; // Safety net
+
   let bestMove;
+  const empty = getEmptyCells(board);
+
   if (difficulty === 'easy') {
-    // Random move on easy
-    const empty = getEmptyCells(board);
     bestMove = empty[Math.floor(Math.random() * empty.length)];
   } else if (difficulty === 'medium') {
-    // 50% chance to do best move, 50% random
     if (Math.random() < 0.5) {
-      const empty = getEmptyCells(board);
       bestMove = empty[Math.floor(Math.random() * empty.length)];
     } else {
-      bestMove = minimax(board, currentPlayer).index;
+      bestMove = minimax(board, PLAYER_O).index;
     }
-  } else {
-    // Hard mode = perfect minimax
-    bestMove = minimax(board, currentPlayer).index;
+  } else { // hard
+    bestMove = minimax(board, PLAYER_O).index;
   }
+
   handleCellClick(bestMove);
 }
 
@@ -127,11 +136,12 @@ function minimax(newBoard, player) {
     const move = { index: i };
     newBoard[i] = player;
 
+    let result;
     if (player === PLAYER_O) {
-      const result = minimax(newBoard, PLAYER_X);
+      result = minimax(newBoard, PLAYER_X);
       move.score = result.score;
     } else {
-      const result = minimax(newBoard, PLAYER_O);
+      result = minimax(newBoard, PLAYER_O);
       move.score = result.score;
     }
 
@@ -154,7 +164,45 @@ function getEmptyCells(bd) {
   return bd.reduce((acc, cell, i) => cell === '' ? acc.concat(i) : acc, []);
 }
 
-// Example UI to set difficulty - just add buttons or dropdown that call setDifficulty('easy') etc.
+// Difficulty setting handler
+function setDifficulty(level) {
+  difficulty = level;
+  updateModeStyle();
+  startGame();
+}
 
-// Initialize the game on page load
+// Update container class for difficulty styling
+function updateModeStyle() {
+  container.classList.remove('easy', 'medium', 'hard');
+  container.classList.add(difficulty);
+
+  // Also highlight the active difficulty button
+  difficultyButtons.forEach(btn => {
+    btn.classList.toggle('active', btn.textContent.toLowerCase() === difficulty);
+  });
+}
+
+// Toggle between 2-player and vs bot mode with UI update
+function togglePlayerMode() {
+  twoPlayerMode = !twoPlayerMode;
+  updateModeToggleButton();
+  startGame();
+}
+
+function updateModeToggleButton() {
+  if (!modeToggleBtn) return; // no button in UI? skip
+  modeToggleBtn.textContent = twoPlayerMode ? 'Switch to VS Bot' : 'Switch to 2 Players';
+}
+
+// Event listeners for difficulty buttons
+difficultyButtons.forEach(btn => {
+  btn.addEventListener('click', () => setDifficulty(btn.textContent.toLowerCase()));
+});
+
+// Event listener for mode toggle button (if present)
+if (modeToggleBtn) {
+  modeToggleBtn.addEventListener('click', togglePlayerMode);
+}
+
+// Kickoff game on page load
 startGame();
