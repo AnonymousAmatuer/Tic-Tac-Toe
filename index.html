@@ -9,11 +9,25 @@
 <body>
   <div class="container">
     <h1>Tic-Tac-Toe</h1>
+    
+    <!-- Difficulty Selection Buttons -->
+    <div class="difficulty-select">
+      <button>Easy</button>
+      <button class="active">Medium</button> <!-- default -->
+      <button>Hard</button>
+    </div>
+
+    <!-- Game Board -->
     <div id="game-board" class="board"></div>
+
+    <!-- Game Status -->
     <div id="status-message" class="status"></div>
+
+    <!-- Control Buttons -->
     <button onclick="startGame()">Start New Game</button>
-    <button onclick="togglePlayerMode()">Toggle Player Mode</button>
+    <button id="mode-toggle">Switch to VS Bot</button>
   </div>
+
   <script src="script.js"></script>
 </body>
 </html>
