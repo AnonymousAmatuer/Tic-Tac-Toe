@@ -15,7 +15,9 @@ const boardElement = document.getElementById('game-board');
 const statusElement = document.getElementById('status-message');
 const container = document.querySelector('.container');
 const modeToggleBtn = document.getElementById('mode-toggle');
-const difficultyButtons = document.querySelectorAll('.difficulty-select button');
+const dial = document.getElementById('difficultyDial');
+const dialKnob = document.getElementById('dialKnob');
+const modeLabel = document.getElementById('modeLabel');
 
 // Start or reset the game
 function startGame() {
@@ -24,7 +26,6 @@ function startGame() {
   gameActive = true;
   updateStatus();
   renderBoard();
-  applyDifficultyStyle();
   updateToggleText();
 }
 
@@ -143,20 +144,27 @@ function minimax(bd, player) {
     : moves.reduce((best, move) => move.score < best.score ? move : best, { score: Infinity });
 }
 
-// Set bot difficulty
+// Set bot difficulty and update visuals
 function setDifficulty(level) {
   difficulty = level;
-  applyDifficultyStyle();
-  startGame();
-}
 
-// Apply difficulty styling
-function applyDifficultyStyle() {
+  // Apply container class for styling
   container.classList.remove('easy', 'medium', 'hard');
-  container.classList.add(difficulty);
-  difficultyButtons.forEach(btn => {
-    btn.classList.toggle('active', btn.textContent.toLowerCase() === difficulty);
-  });
+  container.classList.add(level);
+
+  // Rotate the dial knob
+  const angles = { easy: -45, medium: 0, hard: 45 };
+  dialKnob.style.transform = `rotate(${angles[level]}deg)`;
+
+  // Update mode label
+  const icons = {
+    easy: '😴 Easy',
+    medium: '🧠 Medium',
+    hard: '🤖 Hard'
+  };
+  if (modeLabel) modeLabel.textContent = icons[level];
+
+  startGame();
 }
 
 // Toggle between two-player and bot mode
@@ -173,10 +181,15 @@ function updateToggleText() {
   }
 }
 
-// Event listeners
-difficultyButtons.forEach(btn =>
-  btn.addEventListener('click', () => setDifficulty(btn.textContent.toLowerCase()))
-);
+// Event listeners for dial ticks
+['easy', 'medium', 'hard'].forEach(level => {
+  const tick = dial.querySelector(`.${level}`);
+  if (tick) {
+    tick.addEventListener('click', () => setDifficulty(level));
+  }
+});
+
+// Toggle button
 if (modeToggleBtn) modeToggleBtn.addEventListener('click', togglePlayerMode);
 
 // Initialize game
