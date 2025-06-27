@@ -9,12 +9,12 @@
 <body>
   <div class="container">
     <h1>Tic-Tac-Toe</h1>
-    
-    <!-- Difficulty Selection Buttons -->
-    <div class="difficulty-select">
-      <button>Easy</button>
-      <button class="active">Medium</button> <!-- default -->
-      <button>Hard</button>
+
+    <!-- Difficulty Dial Selector -->
+    <div class="difficulty-dial-container">
+      <label for="difficulty-dial">Difficulty:</label>
+      <input type="range" id="difficulty-dial" min="0" max="2" step="1" value="1" />
+      <div class="difficulty-level-display">Medium</div>
     </div>
 
     <!-- Game Board -->
