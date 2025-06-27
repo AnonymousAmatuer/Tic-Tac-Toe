@@ -124,3 +124,38 @@ body {
     font-size: 8vw;
   }
 }
+
+/* Difficulty Selection Buttons */
+.difficulty-select {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.difficulty-select button {
+  padding: 8px 14px;
+  font-weight: 600;
+  font-size: 1rem;
+  color: #eee;
+  background-color: #444;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.difficulty-select button:hover {
+  background-color: #555;
+  transform: scale(1.05);
+}
+
+/* Active difficulty */
+.difficulty-select button.active {
+  background-color: #61dafb;
+  color: #222;
+  border: 2px solid #eee;
+  box-shadow: 0 0 12px 3px rgba(97, 218, 251, 0.7);
+}
+
