@@ -12,9 +12,13 @@
 
     <!-- Difficulty Dial Selector -->
     <div class="difficulty-dial-container">
-      <label for="difficulty-dial">Difficulty:</label>
-      <input type="range" id="difficulty-dial" min="0" max="2" step="1" value="1" />
-      <div class="difficulty-level-display">Medium</div>
+      <div class="difficulty-dial" id="dial">
+        <div class="tick easy"></div>
+        <div class="tick medium"></div>
+        <div class="tick hard"></div>
+        <div class="knob" id="dialKnob"></div>
+      </div>
+      <div class="mode-label" id="modeLabel">Medium 🧠</div>
     </div>
 
     <!-- Game Board -->
