@@ -1,18 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="stylesheet" href="style.css"/>
   <title>Tic-Tac-Toe</title>
 </head>
 <body>
-  <div class="container">
+  <div id="game-container" class="container medium"> <!-- default difficulty is medium -->
     <h1>Tic-Tac-Toe</h1>
 
     <!-- Difficulty Dial Selector -->
     <div class="difficulty-dial-container">
-      <div class="difficulty-dial" id="dial">
+      <div class="difficulty-dial" id="difficultyDial">
         <div class="tick easy"></div>
         <div class="tick medium"></div>
         <div class="tick hard"></div>
@@ -22,14 +22,18 @@
     </div>
 
     <!-- Game Board -->
-    <div id="game-board" class="board"></div>
+    <div id="game-board" class="board">
+      <!-- JS will populate 9 .cell divs -->
+    </div>
 
     <!-- Game Status -->
-    <div id="status-message" class="status"></div>
+    <div id="status-message" class="status">Press "Start New Game"</div>
 
     <!-- Control Buttons -->
-    <button onclick="startGame()">Start New Game</button>
-    <button id="mode-toggle">Switch to VS Bot</button>
+    <div style="margin-top: 20px;">
+      <button onclick="startGame()">Start New Game</button>
+      <button id="mode-toggle">Switch to VS Bot</button>
+    </div>
   </div>
 
   <script src="script.js"></script>
