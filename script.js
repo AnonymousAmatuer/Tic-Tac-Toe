@@ -1,6 +1,7 @@
 // Constants
 const PLAYER_X = 'X', PLAYER_O = 'O';
-const WIN_COLOR = 'lightgreen', DEFAULT_CELL_COLOR = '';
+const WIN_COLOR = 'lightgreen';
+const DEFAULT_CELL_COLOR = '';
 
 // Game state
 let board = Array(9).fill('');
@@ -16,6 +17,7 @@ const container = document.querySelector('.container');
 const modeToggleBtn = document.getElementById('mode-toggle');
 const difficultyButtons = document.querySelectorAll('.difficulty-select button');
 
+// Start or reset the game
 function startGame() {
   board.fill('');
   currentPlayer = PLAYER_X;
@@ -26,34 +28,33 @@ function startGame() {
   updateToggleText();
 }
 
+// Render the game board
 function renderBoard() {
   boardElement.innerHTML = '';
   board.forEach((cell, i) => {
     const cellEl = document.createElement('div');
     cellEl.className = 'cell';
     cellEl.textContent = cell;
-    cellEl.style.cursor = gameActive && cell === '' ? 'pointer' : 'default';
+    cellEl.style.cursor = gameActive && !cell ? 'pointer' : 'default';
     if (gameActive && !cell) cellEl.addEventListener('click', () => handleClick(i));
     boardElement.appendChild(cellEl);
   });
 }
 
-function handleClick(i) {
-  if (!gameActive || board[i]) return;
+// Handle player or bot moves
+function handleClick(index) {
+  if (!gameActive || board[index]) return;
 
-  board[i] = currentPlayer;
+  board[index] = currentPlayer;
   renderBoard();
 
   if (checkWinner(board, currentPlayer)) {
-    statusElement.textContent = `${currentPlayer} wins!`;
-    gameActive = false;
-    highlightWin(board, currentPlayer);
+    endGame(`${currentPlayer} wins!`, currentPlayer);
     return;
   }
 
   if (!board.includes('')) {
-    statusElement.textContent = "It's a tie!";
-    gameActive = false;
+    endGame("It's a tie!");
     return;
   }
 
@@ -61,43 +62,53 @@ function handleClick(i) {
   updateStatus();
 
   if (!twoPlayerMode && currentPlayer === PLAYER_O && gameActive) {
-    setTimeout(makeBotMove, 500);
+    setTimeout(makeBotMove, 300);
   }
 }
 
+// End the game
+function endGame(message, winner = null) {
+  statusElement.textContent = message;
+  gameActive = false;
+  if (winner) highlightWin(board, winner);
+}
+
+// Update status message
 function updateStatus() {
   statusElement.textContent = `${currentPlayer}'s turn`;
 }
 
+// Check for a winner
 function checkWinner(bd, player) {
-  const combos = [
-    [0,1,2],[3,4,5],[6,7,8],
-    [0,3,6],[1,4,7],[2,5,8],
-    [0,4,8],[2,4,6]
-  ];
-  return combos.some(c => c.every(i => bd[i] === player));
+  return getWinningCombo(bd, player) !== null;
 }
 
+// Get winning combination
+function getWinningCombo(bd, player) {
+  const combos = [
+    [0,1,2], [3,4,5], [6,7,8],
+    [0,3,6], [1,4,7], [2,5,8],
+    [0,4,8], [2,4,6]
+  ];
+  return combos.find(c => c.every(i => bd[i] === player)) || null;
+}
+
+// Highlight the winning combination
 function highlightWin(bd, player) {
-  const combos = [
-    [0,1,2],[3,4,5],[6,7,8],
-    [0,3,6],[1,4,7],[2,5,8],
-    [0,4,8],[2,4,6]
-  ];
-  const winCombo = combos.find(c => c.every(i => bd[i] === player));
-  if (winCombo) winCombo.forEach(i => boardElement.children[i].style.backgroundColor = WIN_COLOR);
+  const combo = getWinningCombo(bd, player);
+  if (combo) combo.forEach(i => boardElement.children[i].style.backgroundColor = WIN_COLOR);
 }
 
+// Bot move logic
 function makeBotMove() {
-  if (!gameActive) return;
-  const empty = board.map((v,i) => v === '' ? i : null).filter(i => i !== null);
-
+  const emptyIndices = board.map((v, i) => v === '' ? i : null).filter(i => i !== null);
   let move;
+
   if (difficulty === 'easy') {
-    move = empty[Math.floor(Math.random() * empty.length)];
+    move = randomMove(emptyIndices);
   } else if (difficulty === 'medium') {
     move = Math.random() < 0.5
-      ? empty[Math.floor(Math.random() * empty.length)]
+      ? randomMove(emptyIndices)
       : minimax(board, PLAYER_O).index;
   } else {
     move = minimax(board, PLAYER_O).index;
@@ -106,8 +117,15 @@ function makeBotMove() {
   handleClick(move);
 }
 
+// Pick random move
+function randomMove(moves) {
+  return moves[Math.floor(Math.random() * moves.length)];
+}
+
+// Minimax algorithm
 function minimax(bd, player) {
-  const empty = bd.map((v,i) => v === '' ? i : null).filter(i => i !== null);
+  const opponent = player === PLAYER_O ? PLAYER_X : PLAYER_O;
+  const empty = bd.map((v, i) => v === '' ? i : null).filter(i => i !== null);
 
   if (checkWinner(bd, PLAYER_X)) return { score: -10 };
   if (checkWinner(bd, PLAYER_O)) return { score: 10 };
@@ -115,22 +133,24 @@ function minimax(bd, player) {
 
   const moves = empty.map(i => {
     bd[i] = player;
-    const result = minimax(bd, player === PLAYER_O ? PLAYER_X : PLAYER_O);
+    const { score } = minimax(bd, opponent);
     bd[i] = '';
-    return { index: i, score: result.score };
+    return { index: i, score };
   });
 
   return player === PLAYER_O
-    ? moves.reduce((best, m) => m.score > best.score ? m : best, { score: -Infinity })
-    : moves.reduce((best, m) => m.score < best.score ? m : best, { score: Infinity });
+    ? moves.reduce((best, move) => move.score > best.score ? move : best, { score: -Infinity })
+    : moves.reduce((best, move) => move.score < best.score ? move : best, { score: Infinity });
 }
 
+// Set bot difficulty
 function setDifficulty(level) {
   difficulty = level;
   applyDifficultyStyle();
   startGame();
 }
 
+// Apply difficulty styling
 function applyDifficultyStyle() {
   container.classList.remove('easy', 'medium', 'hard');
   container.classList.add(difficulty);
@@ -139,23 +159,25 @@ function applyDifficultyStyle() {
   });
 }
 
+// Toggle between two-player and bot mode
 function togglePlayerMode() {
   twoPlayerMode = !twoPlayerMode;
   updateToggleText();
   startGame();
 }
 
+// Update mode toggle button text
 function updateToggleText() {
   if (modeToggleBtn) {
     modeToggleBtn.textContent = twoPlayerMode ? 'Switch to VS Bot' : 'Switch to 2 Players';
   }
 }
 
-// Hook up event listeners
+// Event listeners
 difficultyButtons.forEach(btn =>
   btn.addEventListener('click', () => setDifficulty(btn.textContent.toLowerCase()))
 );
 if (modeToggleBtn) modeToggleBtn.addEventListener('click', togglePlayerMode);
 
-// Kick things off
+// Initialize game
 startGame();
