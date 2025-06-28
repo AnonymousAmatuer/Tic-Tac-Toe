@@ -1,172 +1,92 @@
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: linear-gradient(135deg, #1f1f2e, #282c34);
-  color: #eee;
-  height: 100vh;
+  font-family: Arial, sans-serif;
+  text-align: center;
+  background-color: #f4f4f4;
   margin: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  user-select: none;
+  padding: 0;
 }
 
-.container {
-  text-align: center;
-  width: 350px;
-  padding: 20px;
-  border-radius: 15px;
-  background: rgba(40, 44, 52, 0.9);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.7);
-  transition: border 0.4s ease, box-shadow 0.4s ease;
+h1 {
+  margin-top: 20px;
+  font-size: 36px;
+  color: #333;
 }
 
 .board {
   display: grid;
   grid-template-columns: repeat(3, 100px);
-  grid-gap: 15px;
-  margin: 25px auto;
+  gap: 10px;
+  justify-content: center;
+  margin: 30px auto;
 }
 
 .cell {
   width: 100px;
   height: 100px;
-  background: #61dafb;
-  border-radius: 12px;
-  font-size: 3.5rem;
-  font-weight: 700;
-  color: #222;
+  font-size: 2.5em;
+  background-color: #fff;
+  border: 2px solid #ccc;
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.15s ease;
-  box-shadow: 0 6px 12px rgba(97, 218, 251, 0.5);
   user-select: none;
+  transition: background-color 0.2s ease;
 }
 
-.cell:hover {
-  background-color: #21a1f1;
-  transform: scale(1.1);
-  box-shadow: 0 8px 16px rgba(33, 161, 241, 0.8);
-}
-
-.cell:active {
-  transform: scale(0.95);
-  box-shadow: 0 4px 8px rgba(33, 161, 241, 0.6);
+.cell:hover:not(.disabled) {
+  background-color: #f0f0f0;
 }
 
 .cell.disabled {
-  cursor: default;
-  opacity: 0.7;
+  cursor: not-allowed;
+  color: #aaa;
 }
 
-/* Winning highlight */
-.cell.winning {
-  background-color: #4caf50 !important;
+#message {
+  font-size: 20px;
+  margin-bottom: 15px;
+}
+
+#restart {
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #3f51b5;
   color: white;
-  box-shadow: 0 0 15px 5px #4caf50aa;
-  animation: pulseWin 1.2s infinite alternate;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
 }
 
-@keyframes pulseWin {
-  0% { box-shadow: 0 0 15px 5px #4caf50aa; }
-  100% { box-shadow: 0 0 25px 10px #4caf50ff; }
+#restart:hover {
+  background-color: #303f9f;
 }
 
-.status {
-  font-size: 1.5rem;
-  font-weight: 600;
-  margin-top: 20px;
-  letter-spacing: 1.2px;
-  min-height: 2em;
-  transition: color 0.4s ease;
-}
-
-.mode-indicator {
-  margin-top: 15px;
-  font-size: 1.1rem;
-  font-style: italic;
-  opacity: 0.8;
-  color: #61dafb;
-}
-
-/* Difficulty Themes */
-.container.easy {
-  border: 3px solid #f39c12;
-  box-shadow: 0 0 25px 3px #f39c12aa;
-}
-
-.container.medium {
-  border: 3px solid #2980b9;
-  box-shadow: 0 0 25px 3px #2980b9aa;
-}
-
-.container.hard {
-  border: 3px solid #c0392b;
-  box-shadow: 0 0 35px 5px #c0392baa;
-}
-
-.difficulty-dial-container {
-  margin: 20px auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.difficulty-dial {
-  position: relative;
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-  background: radial-gradient(circle at center, #333 60%, #111);
-  border: 4px solid #666;
-  box-shadow: 0 0 20px rgba(97, 218, 251, 0.3);
-  margin-bottom: 10px;
-}
-
-.tick {
-  position: absolute;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background-color: #888;
-  top: 0;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-
-.tick.easy {
-  transform: rotate(0deg) translateY(-45px);
-  background-color: #f39c12;
-}
-
-.tick.medium {
-  transform: rotate(120deg) translateY(-45px);
-  background-color: #2980b9;
-}
-
-.tick.hard {
-  transform: rotate(240deg) translateY(-45px);
-  background-color: #c0392b;
-}
-
-.knob {
-  position: absolute;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background-color: #61dafb;
-  top: 50%;
-  left: 50%;
-  transform: rotate(120deg) translateY(-45px);
-  transform-origin: center center;
-  box-shadow: 0 0 10px rgba(97, 218, 251, 0.7);
-  transition: transform 0.3s ease;
-}
-
-.mode-label {
-  font-size: 1.1rem;
-  color: #eee;
+.dial {
+  display: inline-block;
+  padding: 10px 20px;
+  margin: 10px;
+  border-radius: 8px;
   font-weight: bold;
-  margin-top: 8px;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  user-select: none;
+}
+
+.dial.easy {
+  background-color: green;
+}
+
+.dial.medium {
+  background-color: orange;
+}
+
+.dial.hard {
+  background-color: crimson;
+}
+
+#difficultyText {
+  font-size: 18px;
+  margin-bottom: 5px;
 }
