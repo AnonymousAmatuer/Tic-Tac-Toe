@@ -1,7 +1,7 @@
 body {
-  font-family: Arial, sans-serif;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(to right, #ece9e6, #ffffff);
   text-align: center;
-  background-color: #f4f4f4;
   margin: 0;
   padding: 0;
 }
@@ -9,84 +9,51 @@ body {
 h1 {
   margin-top: 20px;
   font-size: 36px;
-  color: #333;
-}
-
-.board {
-  display: grid;
-  grid-template-columns: repeat(3, 100px);
-  gap: 10px;
-  justify-content: center;
-  margin: 30px auto;
-}
-
-.cell {
-  width: 100px;
-  height: 100px;
-  font-size: 2.5em;
-  background-color: #fff;
-  border: 2px solid #ccc;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  user-select: none;
-  transition: background-color 0.2s ease;
-}
-
-.cell:hover:not(.disabled) {
-  background-color: #f0f0f0;
-}
-
-.cell.disabled {
-  cursor: not-allowed;
-  color: #aaa;
-}
-
-#message {
-  font-size: 20px;
-  margin-bottom: 15px;
-}
-
-#restart {
-  padding: 10px 20px;
-  font-size: 16px;
-  background-color: #3f51b5;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-#restart:hover {
-  background-color: #303f9f;
+  color: #2c3e50;
 }
 
 .dial {
   display: inline-block;
-  padding: 10px 20px;
-  margin: 10px;
-  border-radius: 8px;
-  font-weight: bold;
-  color: white;
+  padding: 12px 30px;
+  margin: 15px auto;
+  font-size: 18px;
+  font-weight: 600;
+  border-radius: 12px;
+  border: none;
   cursor: pointer;
-  transition: background-color 0.3s ease;
   user-select: none;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+  backdrop-filter: blur(6px);
+  color: #fff;
+}
+
+.dial:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 14px rgba(0,0,0,0.15);
+}
+
+.dial:active {
+  transform: scale(0.97);
+  box-shadow: 0 3px 7px rgba(0,0,0,0.1);
 }
 
 .dial.easy {
-  background-color: green;
+  background: linear-gradient(45deg, #4CAF50, #81C784);
 }
 
 .dial.medium {
-  background-color: orange;
+  background: linear-gradient(45deg, #FF9800, #FFB74D);
 }
 
 .dial.hard {
-  background-color: crimson;
+  background: linear-gradient(45deg, #e53935, #e57373);
 }
 
 #difficultyText {
-  font-size: 18px;
-  margin-bottom: 5px;
+  font-size: 20px;
+  color: #444;
+  margin-top: 10px;
+  margin-bottom: 10px;
 }
