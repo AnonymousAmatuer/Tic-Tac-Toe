@@ -1,87 +1,78 @@
-const board = document.getElementById("board");
-const message = document.getElementById("message");
+const boardElement = document.getElementById("board");
+const statusElement = document.getElementById("status");
 const restartBtn = document.getElementById("restart");
-const difficultyDial = document.getElementById("difficulty");
-const difficultyText = document.getElementById("difficultyText");
+const difficultyText = document.getElementById("difficulty");
+const changeDifficultyBtn = document.getElementById("changeDifficulty");
 
+const difficulties = ["Easy", "Medium", "Hard"];
+let difficultyIndex = 0;
+
+let board = ["", "", "", "", "", "", "", "", ""];
 let currentPlayer = "X";
-let difficulty = "Easy";
-let boardState = Array(9).fill("");
+let gameActive = true;
 
-function createBoard() {
-  board.innerHTML = "";
-  boardState = Array(9).fill("");
-
-  for (let i = 0; i < 9; i++) {
-    const cell = document.createElement("div");
-    cell.classList.add("cell");
-    cell.dataset.index = i;
-    cell.addEventListener("click", handleMove);
-    board.appendChild(cell);
-  }
-
-  message.textContent = `Player ${currentPlayer}'s turn`;
+function renderBoard() {
+  boardElement.innerHTML = "";
+  board.forEach((cell, index) => {
+    const div = document.createElement("div");
+    div.classList.add("cell");
+    div.dataset.index = index;
+    div.textContent = cell;
+    boardElement.appendChild(div);
+  });
 }
 
-function handleMove(e) {
-  const index = e.target.dataset.index;
-
-  if (boardState[index] !== "") return;
-
-  boardState[index] = currentPlayer;
-  e.target.textContent = currentPlayer;
-  e.target.classList.add("disabled");
-
-  if (checkWinner(currentPlayer)) {
-    message.textContent = `Player ${currentPlayer} wins!`;
-    endGame();
-    return;
-  }
-
-  if (!boardState.includes("")) {
-    message.textContent = "It's a draw!";
-    return;
-  }
-
-  currentPlayer = currentPlayer === "X" ? "O" : "X";
-  message.textContent = `Player ${currentPlayer}'s turn`;
-}
-
-function checkWinner(player) {
-  const winCombos = [
-    [0, 1, 2],
-    [3, 4, 5],
-    [6, 7, 8],
-    [0, 3, 6],
-    [1, 4, 7],
-    [2, 5, 8],
-    [0, 4, 8],
-    [2, 4, 6],
+function checkWinner() {
+  const winPatterns = [
+    [0,1,2],[3,4,5],[6,7,8], // Rows
+    [0,3,6],[1,4,7],[2,5,8], // Cols
+    [0,4,8],[2,4,6]          // Diags
   ];
-
-  return winCombos.some(combo => 
-    combo.every(index => boardState[index] === player)
-  );
+  for (const [a,b,c] of winPatterns) {
+    if (board[a] && board[a] === board[b] && board[b] === board[c]) {
+      return board[a];
+    }
+  }
+  return board.includes("") ? null : "Draw";
 }
 
-function endGame() {
-  const cells = document.querySelectorAll(".cell");
-  cells.forEach(cell => cell.classList.add("disabled"));
+function updateStatus() {
+  const winner = checkWinner();
+  if (winner) {
+    gameActive = false;
+    statusElement.textContent = winner === "Draw" ? "It's a draw!" : `Player ${winner} wins!`;
+  } else {
+    statusElement.textContent = `Player ${currentPlayer}'s turn`;
+  }
 }
 
-restartBtn.addEventListener("click", () => {
+function handleCellClick(e) {
+  const index = e.target.dataset.index;
+  if (!gameActive || board[index]) return;
+
+  board[index] = currentPlayer;
+  currentPlayer = currentPlayer === "X" ? "O" : "X";
+  renderBoard();
+  updateStatus();
+}
+
+function restartGame() {
+  board = ["", "", "", "", "", "", "", "", ""];
   currentPlayer = "X";
-  createBoard();
-});
+  gameActive = true;
+  renderBoard();
+  updateStatus();
+}
 
-difficultyDial.addEventListener("click", () => {
-  const difficulties = ["Easy", "Medium", "Hard"];
-  const current = difficulties.indexOf(difficulty);
-  const next = (current + 1) % difficulties.length;
-  difficulty = difficulties[next];
-  difficultyText.textContent = `Difficulty: ${difficulty}`;
+function changeDifficulty() {
+  difficultyIndex = (difficultyIndex + 1) % difficulties.length;
+  difficultyText.textContent = `Difficulty: ${difficulties[difficultyIndex]}`;
+}
 
-  difficultyDial.className = `dial ${difficulty.toLowerCase()}`;
-});
+boardElement.addEventListener("click", handleCellClick);
+restartBtn.addEventListener("click", restartGame);
+changeDifficultyBtn.addEventListener("click", changeDifficulty);
 
-createBoard();
+// Initial render
+renderBoard();
+updateStatus();
