@@ -1,196 +1,163 @@
-// Constants
-const PLAYER_X = 'X', PLAYER_O = 'O';
-const WIN_COLOR = 'lightgreen';
-const DEFAULT_CELL_COLOR = '';
+const PLAYER_X = 'X';
+const PLAYER_O = 'O';
+let currentPlayer;
+let board;
+let isGameOver = false;
+let currentDifficulty = 'easy'; 
 
-// Game state
-let board = Array(9).fill('');
-let currentPlayer = PLAYER_X;
-let gameActive = true;
-let twoPlayerMode = true;
-let difficulty = 'medium';
+const cells = document.querySelectorAll('.cell');
+const message = document.getElementById('message');
+const restartButton = document.getElementById('restart');
+const difficultyDial = document.getElementById('difficulty');
+const difficultyText = document.getElementById('difficultyText');
 
-// DOM Elements
-const boardElement = document.getElementById('game-board');
-const statusElement = document.getElementById('status-message');
-const container = document.querySelector('.container');
-const modeToggleBtn = document.getElementById('mode-toggle');
-const dial = document.getElementById('difficultyDial');
-const dialKnob = document.getElementById('dialKnob');
-const modeLabel = document.getElementById('modeLabel');
-
-// Start or reset the game
 function startGame() {
-  board.fill('');
+  board = Array(9).fill(null);
   currentPlayer = PLAYER_X;
-  gameActive = true;
-  updateStatus();
-  renderBoard();
-  updateToggleText();
-}
-
-// Render the game board
-function renderBoard() {
-  boardElement.innerHTML = '';
-  board.forEach((cell, i) => {
-    const cellEl = document.createElement('div');
-    cellEl.className = 'cell';
-    cellEl.textContent = cell;
-    cellEl.style.cursor = gameActive && !cell ? 'pointer' : 'default';
-    if (gameActive && !cell) cellEl.addEventListener('click', () => handleClick(i));
-    boardElement.appendChild(cellEl);
+  isGameOver = false;
+  cells.forEach(cell => {
+    cell.textContent = '';
+    cell.classList.remove('disabled');
   });
+  message.textContent = `Player ${currentPlayer}'s turn`;
+  if (currentPlayer === PLAYER_O) {
+    makeBotMove();
+  }
 }
 
-// Handle player or bot moves
-function handleClick(index) {
-  if (!gameActive || board[index]) return;
+function makeMove(index) {
+  if (isGameOver || board[index]) return;
 
   board[index] = currentPlayer;
-  renderBoard();
+  cells[index].textContent = currentPlayer;
+  cells[index].classList.add('disabled');
 
   if (checkWinner(board, currentPlayer)) {
-    endGame(`${currentPlayer} wins!`, currentPlayer);
+    message.textContent = `Player ${currentPlayer} wins!`;
+    isGameOver = true;
     return;
   }
 
-  if (!board.includes('')) {
-    endGame("It's a tie!");
+  if (!board.includes(null)) {
+    message.textContent = "It's a draw!";
+    isGameOver = true;
     return;
   }
 
   currentPlayer = currentPlayer === PLAYER_X ? PLAYER_O : PLAYER_X;
-  updateStatus();
+  message.textContent = `Player ${currentPlayer}'s turn`;
 
-  if (!twoPlayerMode && currentPlayer === PLAYER_O && gameActive) {
+  if (currentPlayer === PLAYER_O) {
     setTimeout(makeBotMove, 300);
   }
 }
 
-// End the game
-function endGame(message, winner = null) {
-  statusElement.textContent = message;
-  gameActive = false;
-  if (winner) highlightWin(board, winner);
-}
-
-// Update status message
-function updateStatus() {
-  statusElement.textContent = `${currentPlayer}'s turn`;
-}
-
-// Check for a winner
-function checkWinner(bd, player) {
-  return getWinningCombo(bd, player) !== null;
-}
-
-// Get winning combination
-function getWinningCombo(bd, player) {
-  const combos = [
-    [0,1,2], [3,4,5], [6,7,8],
-    [0,3,6], [1,4,7], [2,5,8],
-    [0,4,8], [2,4,6]
-  ];
-  return combos.find(c => c.every(i => bd[i] === player)) || null;
-}
-
-// Highlight the winning combination
-function highlightWin(bd, player) {
-  const combo = getWinningCombo(bd, player);
-  if (combo) combo.forEach(i => boardElement.children[i].style.backgroundColor = WIN_COLOR);
-}
-
-// Bot move logic
 function makeBotMove() {
-  const emptyIndices = board.map((v, i) => v === '' ? i : null).filter(i => i !== null);
-  let move;
+  console.log("Current difficulty:", currentDifficulty); // Debug
 
-  if (difficulty === 'easy') {
-    move = randomMove(emptyIndices);
-  } else if (difficulty === 'medium') {
-    move = Math.random() < 0.5
-      ? randomMove(emptyIndices)
-      : minimax(board, PLAYER_O).index;
+  let move;
+  if (currentDifficulty === 'easy') {
+    move = getAvailableMoves()[Math.floor(Math.random() * getAvailableMoves().length)];
+  } else if (currentDifficulty === 'medium') {
+    if (Math.random() < 0.5) {
+      move = getAvailableMoves()[Math.floor(Math.random() * getAvailableMoves().length)];
+    } else {
+      move = minimax(board, PLAYER_O).index;
+    }
   } else {
     move = minimax(board, PLAYER_O).index;
   }
 
-  handleClick(move);
+  makeMove(move);
 }
 
-// Pick random move
-function randomMove(moves) {
-  return moves[Math.floor(Math.random() * moves.length)];
+function getAvailableMoves() {
+  return board.map((cell, index) => (cell === null ? index : null)).filter(i => i !== null);
 }
 
-// Minimax algorithm
-function minimax(bd, player) {
-  const opponent = player === PLAYER_O ? PLAYER_X : PLAYER_O;
-  const empty = bd.map((v, i) => v === '' ? i : null).filter(i => i !== null);
+function checkWinner(board, player) {
+  const winPatterns = [
+    [0, 1, 2],
+    [3, 4, 5],
+    [6, 7, 8],
+    [0, 3, 6],
+    [1, 4, 7],
+    [2, 5, 8],
+    [0, 4, 8],
+    [2, 4, 6]
+  ];
 
-  if (checkWinner(bd, PLAYER_X)) return { score: -10 };
-  if (checkWinner(bd, PLAYER_O)) return { score: 10 };
-  if (!empty.length) return { score: 0 };
-
-  const moves = empty.map(i => {
-    bd[i] = player;
-    const { score } = minimax(bd, opponent);
-    bd[i] = '';
-    return { index: i, score };
-  });
-
-  return player === PLAYER_O
-    ? moves.reduce((best, move) => move.score > best.score ? move : best, { score: -Infinity })
-    : moves.reduce((best, move) => move.score < best.score ? move : best, { score: Infinity });
+  return winPatterns.some(pattern =>
+    pattern.every(index => board[index] === player)
+  );
 }
 
-// Set bot difficulty and update visuals
-function setDifficulty(level) {
-  difficulty = level;
+function minimax(newBoard, player) {
+  const availSpots = getAvailableMoves();
 
-  // Apply container class for styling
-  container.classList.remove('easy', 'medium', 'hard');
-  container.classList.add(level);
+  if (checkWinner(newBoard, PLAYER_X)) return { score: -10 };
+  if (checkWinner(newBoard, PLAYER_O)) return { score: 10 };
+  if (availSpots.length === 0) return { score: 0 };
 
-  // Rotate the dial knob
-  const angles = { easy: -45, medium: 0, hard: 45 };
-  dialKnob.style.transform = `rotate(${angles[level]}deg)`;
+  const moves = [];
 
-  // Update mode label
-  const icons = {
-    easy: '😴 Easy',
-    medium: '🧠 Medium',
-    hard: '🤖 Hard'
-  };
-  if (modeLabel) modeLabel.textContent = icons[level];
+  for (let i = 0; i < availSpots.length; i++) {
+    const move = {};
+    move.index = availSpots[i];
+    newBoard[availSpots[i]] = player;
 
-  startGame();
-}
+    if (player === PLAYER_O) {
+      const result = minimax(newBoard, PLAYER_X);
+      move.score = result.score;
+    } else {
+      const result = minimax(newBoard, PLAYER_O);
+      move.score = result.score;
+    }
 
-// Toggle between two-player and bot mode
-function togglePlayerMode() {
-  twoPlayerMode = !twoPlayerMode;
-  updateToggleText();
-  startGame();
-}
-
-// Update mode toggle button text
-function updateToggleText() {
-  if (modeToggleBtn) {
-    modeToggleBtn.textContent = twoPlayerMode ? 'Switch to VS Bot' : 'Switch to 2 Players';
+    newBoard[availSpots[i]] = null;
+    moves.push(move);
   }
+
+  let bestMove;
+  if (player === PLAYER_O) {
+    let bestScore = -Infinity;
+    for (let i = 0; i < moves.length; i++) {
+      if (moves[i].score > bestScore) {
+        bestScore = moves[i].score;
+        bestMove = i;
+      }
+    }
+  } else {
+    let bestScore = Infinity;
+    for (let i = 0; i < moves.length; i++) {
+      if (moves[i].score < bestScore) {
+        bestScore = moves[i].score;
+        bestMove = i;
+      }
+    }
+  }
+
+  return moves[bestMove];
 }
 
-// Event listeners for dial ticks
-['easy', 'medium', 'hard'].forEach(level => {
-  const tick = dial.querySelector(`.${level}`);
-  if (tick) {
-    tick.addEventListener('click', () => setDifficulty(level));
-  }
+cells.forEach((cell, index) => {
+  cell.addEventListener('click', () => makeMove(index));
 });
 
-// Toggle button
-if (modeToggleBtn) modeToggleBtn.addEventListener('click', togglePlayerMode);
+restartButton.addEventListener('click', startGame);
 
-// Initialize game
+difficultyDial.addEventListener('click', () => {
+  currentDifficulty =
+    currentDifficulty === 'easy' ? 'medium' :
+    currentDifficulty === 'medium' ? 'hard' : 'easy';
+
+  difficultyDial.className = `dial ${currentDifficulty}`;
+  difficultyText.textContent = `Difficulty: ${capitalize(currentDifficulty)}`;
+});
+
+function capitalize(word) {
+  return word.charAt(0).toUpperCase() + word.slice(1);
+}
+
+// Start the game on load
 startGame();
