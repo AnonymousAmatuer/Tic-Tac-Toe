@@ -1,20 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Tic-Tac-Toe</title>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Tic-Tac-Toe</h1>
-
-  <p id="difficultyText">Difficulty: Easy</p>
-  <div class="dial easy" id="difficulty">🔁 Change Difficulty</div>
-
-  <p id="message">Player X's turn</p>
-  <button id="restart">Restart</button>
-
-  <div class="board" id="board"></div>
+  <div class="container">
+    <h1>Tic-Tac-Toe</h1>
+    <p id="difficulty">Difficulty: Easy</p>
+    <button id="changeDifficulty">
+      <img src="https://cdn-icons-png.flaticon.com/512/1828/1828919.png" alt="Settings" class="icon"/>
+      Change Difficulty
+    </button>
+    <p id="status">Player X's turn</p>
+    <div class="board" id="board"></div>
+    <button id="restart">Restart</button>
+  </div>
 
   <script src="script.js"></script>
 </body>
