@@ -6,14 +6,15 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-
   <h1>Tic-Tac-Toe</h1>
-
-  <div id="difficultyText">Difficulty: Easy</div>
-  <div id="difficulty" class="dial easy">🎚️ Change Difficulty</div>
-
-  <div id="message"></div>
   
+  <p id="difficultyText">Difficulty: Easy</p>
+  <div class="dial easy" id="difficulty">🔁 Change Difficulty</div>
+  
+  <p id="message">Player X's turn</p>
+  <button id="restart">Restart</button>
+
+  <!-- 🔥 HERE’S THE PART YOU’RE MISSING 🔥 -->
   <div class="board">
     <div class="cell" data-index="0"></div>
     <div class="cell" data-index="1"></div>
@@ -26,8 +27,7 @@
     <div class="cell" data-index="8"></div>
   </div>
 
-  <button id="restart">Restart</button>
-
   <script src="script.js"></script>
 </body>
 </html>
+
